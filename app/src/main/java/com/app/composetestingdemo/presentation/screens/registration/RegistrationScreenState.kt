@@ -1,6 +1,7 @@
 package com.app.composetestingdemo.presentation.screens.registration
 
 data class RegistrationScreenState(
+    val isLoggingIn: Boolean = false,
     val email: String = "",
     val emailErrorMessage: String? = null,
     val password: String = "",

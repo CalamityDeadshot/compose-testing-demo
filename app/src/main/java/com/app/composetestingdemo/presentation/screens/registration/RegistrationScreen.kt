@@ -1,5 +1,7 @@
 package com.app.composetestingdemo.presentation.screens.registration
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
@@ -10,12 +12,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import com.app.composetestingdemo.presentation.navigation.AppScreen
 import kotlinx.coroutines.flow.collect
 
 @Composable
 fun RegistrationScreen(
-    registrationViewModel: RegistrationViewModel = viewModel()
+    registrationViewModel: RegistrationViewModel = hiltViewModel(),
+    navHostController: NavHostController
 ) {
 
     val state = registrationViewModel.state
@@ -24,10 +30,11 @@ fun RegistrationScreen(
 
     LaunchedEffect(true) {
         registrationViewModel.validationEventsFlow.collect {
-            snackbarHostState.currentSnackbarData?.dismiss()
-            snackbarHostState.showSnackbar(
-                message = "Success!"
-            )
+            navHostController.navigate(AppScreen.UsersList.route) {
+                popUpTo(AppScreen.Register.route) {
+                    inclusive = true
+                }
+            }
         }
     }
 
@@ -39,7 +46,8 @@ fun RegistrationScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(32.dp),
+                .padding(32.dp)
+                .animateContentSize(),
             verticalArrangement = Arrangement.Center
         ) {
             TextField(
@@ -79,46 +87,66 @@ fun RegistrationScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            TextField(
-                modifier = Modifier.fillMaxWidth(),
-                value = state.repeatedPassword,
-                placeholder = {
-                    Text(text = "Repeat password")
-                },
-                onValueChange = registrationViewModel::onRepeatedPasswordChanged,
-                isError = state.repeatedPasswordErrorMessage != null,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Password
-                ),
-                visualTransformation = PasswordVisualTransformation()
-            )
+            AnimatedVisibility(visible = !state.isLoggingIn) {
+                Column {
+                    TextField(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = state.repeatedPassword,
+                        placeholder = {
+                            Text(text = "Repeat password")
+                        },
+                        onValueChange = registrationViewModel::onRepeatedPasswordChanged,
+                        isError = state.repeatedPasswordErrorMessage != null,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Password
+                        ),
+                        visualTransformation = PasswordVisualTransformation()
+                    )
 
-            if (state.repeatedPasswordErrorMessage != null)
-                Text(text = state.repeatedPasswordErrorMessage, color = MaterialTheme.colors.error)
+                    if (state.repeatedPasswordErrorMessage != null)
+                        Text(
+                            text = state.repeatedPasswordErrorMessage,
+                            color = MaterialTheme.colors.error
+                        )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Checkbox(
+                            checked = state.areTermsAccepted,
+                            onCheckedChange = registrationViewModel::onTermsAcceptanceChanged
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            modifier = Modifier.align(Alignment.CenterVertically),
+                            text = "Accept terms"
+                        )
+                    }
+                    if (state.termsAcceptanceErrorMessage != null)
+                        Text(
+                            text = state.termsAcceptanceErrorMessage,
+                            color = MaterialTheme.colors.error
+                        )
+                }
+            }
 
             Row(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Checkbox(
-                    checked = state.areTermsAccepted,
-                    onCheckedChange = registrationViewModel::onTermsAcceptanceChanged
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    modifier = Modifier.align(Alignment.CenterVertically),
-                    text = "Accept terms"
-                )
-            }
-            if (state.termsAcceptanceErrorMessage != null)
-                Text(text = state.termsAcceptanceErrorMessage, color = MaterialTheme.colors.error)
+                TextButton(
+                    onClick = registrationViewModel::onLoginToggle
+                ) {
+                    Text(text = if (state.isLoggingIn) "Register" else "Login")
+                }
 
-            Button(
-                onClick = registrationViewModel::onSubmit,
-                modifier = Modifier.align(Alignment.End)
-            ) {
-                Text(text = "Submit")
+                Button(
+                    onClick = registrationViewModel::onSubmit
+                ) {
+                    Text(text = "Submit")
+                }
             }
         }
     }
