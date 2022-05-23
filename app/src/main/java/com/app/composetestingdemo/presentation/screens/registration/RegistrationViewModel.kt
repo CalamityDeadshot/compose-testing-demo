@@ -5,11 +5,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.app.composetestingdemo.data.di.IoDispatcher
 import com.app.composetestingdemo.domain.use_cases.registration.ValidateEmail
 import com.app.composetestingdemo.domain.use_cases.registration.ValidatePassword
 import com.app.composetestingdemo.domain.use_cases.registration.ValidateRepeatedPassword
 import com.app.composetestingdemo.domain.use_cases.registration.ValidateTermsAcceptance
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
@@ -17,10 +19,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class RegistrationViewModel @Inject constructor(
-    val validateEmail: ValidateEmail,
-    val validatePassword: ValidatePassword,
-    val validateRepeatedPassword: ValidateRepeatedPassword,
-    val validateTermsAcceptance: ValidateTermsAcceptance
+    private val validateEmail: ValidateEmail,
+    private val validatePassword: ValidatePassword,
+    private val validateRepeatedPassword: ValidateRepeatedPassword,
+    private val validateTermsAcceptance: ValidateTermsAcceptance
 ) : ViewModel() {
 
     var state by mutableStateOf(RegistrationScreenState())
@@ -45,7 +47,7 @@ class RegistrationViewModel @Inject constructor(
         state = state.copy(areTermsAccepted = isAccepted)
     }
 
-    fun onSubmit() {
+    fun onSubmit() = viewModelScope.launch {
         val emailResult = validateEmail(state.email)
         val passwordResult = validatePassword(state.password)
         val repeatedPasswordResult = validateRepeatedPassword(state.password, state.repeatedPassword)
@@ -66,9 +68,7 @@ class RegistrationViewModel @Inject constructor(
         ).any { !it.isSuccessful }
 
         if (!hasError) {
-            viewModelScope.launch {
-                validationChannel.send(ValidationEvent.Success)
-            }
+            validationChannel.send(ValidationEvent.Success)
         }
 
     }
