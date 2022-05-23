@@ -9,12 +9,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.app.composetestingdemo.common.TestTags
 import com.app.composetestingdemo.presentation.navigation.AppScreen
 import kotlinx.coroutines.flow.collect
 
@@ -51,7 +53,9 @@ fun RegistrationScreen(
             verticalArrangement = Arrangement.Center
         ) {
             TextField(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag(TestTags.EMAIL_FIELD_TEST_TAG),
                 value = state.email,
                 placeholder = {
                     Text(text = "Email address")
@@ -69,7 +73,9 @@ fun RegistrationScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             TextField(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag(TestTags.PASSWORD_FIELD_TEST_TAG),
                 value = state.password,
                 placeholder = {
                     Text(text = "Password")
@@ -137,12 +143,16 @@ fun RegistrationScreen(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 TextButton(
+                    modifier = Modifier
+                        .testTag(TestTags.LOGIN_TOGGLE_TEST_TAG),
                     onClick = registrationViewModel::onLoginToggle
                 ) {
                     Text(text = if (state.isLoggingIn) "Register" else "Login")
                 }
 
                 Button(
+                    modifier = Modifier
+                        .testTag(TestTags.SUBMIT_TEST_TAG),
                     onClick = registrationViewModel::onSubmit
                 ) {
                     Text(text = "Submit")

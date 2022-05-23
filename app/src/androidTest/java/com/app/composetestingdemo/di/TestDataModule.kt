@@ -30,6 +30,7 @@ object TestDataModule {
     )
         .setTransactionExecutor(testDispatcher.asExecutor())
         .setQueryExecutor(testDispatcher.asExecutor())
+        .allowMainThreadQueries()
         .build()
 
     @Provides

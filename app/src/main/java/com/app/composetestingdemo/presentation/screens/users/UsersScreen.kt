@@ -8,8 +8,10 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.app.composetestingdemo.common.TestTags
 
 @ExperimentalMaterialApi
 @Composable
@@ -19,7 +21,9 @@ fun UsersScreen(
     val state = usersViewModel.state
 
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .testTag(TestTags.USERS_LIST_TEST_TAG),
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -36,7 +40,8 @@ fun UsersScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp),
+                        .padding(8.dp)
+                        .testTag("Card ${user.id}"),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -52,6 +57,7 @@ fun UsersScreen(
                         )
                         AnimatedVisibility(visible = state.selectedUserIds.any { it == user.id }) {
                             Checkbox(
+                                modifier = Modifier.testTag("Checkbox ${user.id}"),
                                 checked = true,
                                 onCheckedChange = null
                             )
