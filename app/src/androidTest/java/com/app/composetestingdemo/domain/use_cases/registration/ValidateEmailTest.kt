@@ -34,7 +34,7 @@ class ValidateEmailTest {
     @Test
     fun emptyEmail_returnsEmptyError() = runBlockingTest {
         val nonValidEmail = ""
-        val validationResult = validateEmail(nonValidEmail)
+        val validationResult = validateEmail(nonValidEmail, false)
         assertThat(validationResult.isSuccessful).isFalse()
         assertThat(validationResult.errorMessage).isEqualTo("Email cannot be empty")
     }
@@ -42,7 +42,7 @@ class ValidateEmailTest {
     @Test
     fun nonValidEmail_returnsNonValidError() = runBlockingTest {
         val nonValidEmail = "eqwrafd@ds"
-        val validationResult = validateEmail(nonValidEmail)
+        val validationResult = validateEmail(nonValidEmail, false)
         assertThat(validationResult.isSuccessful).isFalse()
         assertThat(validationResult.errorMessage).isEqualTo("Email is not valid")
     }
@@ -51,15 +51,23 @@ class ValidateEmailTest {
     fun emailExists_returnsExistingError() = runBlockingTest {
         val email = "test@test.test"
         registerUser(email, "sadasdqewe12")
-        val result = validateEmail(email)
+        val result = validateEmail(email, false)
         assertThat(result.isSuccessful).isFalse()
         assertThat(result.errorMessage).isEqualTo("User with this email already exists")
     }
 
     @Test
+    fun login_emailDoesNotExist_returnsNotExistingError() = runBlockingTest {
+        val email = "test@test.test"
+        val result = validateEmail(email, true)
+        assertThat(result.isSuccessful).isFalse()
+        assertThat(result.errorMessage).isEqualTo("This email does not exist")
+    }
+
+    @Test
     fun validEmail_returnsSuccess() = runBlockingTest {
         val validEmail = "test@test.com"
-        val validationResult = validateEmail(validEmail)
+        val validationResult = validateEmail(validEmail, false)
         assertThat(validationResult.isSuccessful).isTrue()
         assertThat(validationResult.errorMessage).isEqualTo(null)
     }

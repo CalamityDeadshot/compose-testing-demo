@@ -12,7 +12,10 @@ class ValidateEmail @Inject constructor(
     private val getUsers: GetUsers,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) {
-    suspend operator fun invoke(email: String): ValidationResult {
+    suspend operator fun invoke(
+        email: String,
+        isLogin: Boolean
+    ): ValidationResult {
         if (email.isEmpty()) {
             return ValidationResult(
                 isSuccessful = false,
@@ -29,6 +32,18 @@ class ValidateEmail @Inject constructor(
 
         val userAlreadyPresent = withContext(ioDispatcher) {
             getUsers().first().any { it.email == email }
+        }
+
+        if (isLogin) {
+            if (userAlreadyPresent) {
+                return ValidationResult(
+                    isSuccessful = true
+                )
+            }
+            return ValidationResult(
+                isSuccessful = false,
+                errorMessage = "This email does not exist"
+            )
         }
 
         if (userAlreadyPresent) {
